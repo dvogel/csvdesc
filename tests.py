@@ -38,6 +38,14 @@ class TestGuessCorrectness(unittest.TestCase):
         self.assertEqual(decs.type, Decimal)
         self.assertEqual(strings.type, str)
 
+    def test_single_boolean_int_is_int(self):
+        guesses = describe_fixture('int1.csv', SamplingStyles.FirstN(1))
+        ((field, guess),) = guesses.items()
+        self.assertEqual(field, 'i')
+        self.assertEqual(guess.observations, 1)
+        self.assertEqual(guess.values['1'], 1)
+        self.assertEqual(guess.type, int)
+
 class TestSampling(unittest.TestCase):
     def test_reservoir_underrun(self):
         guesses = describe_fixture('int1.csv', SamplingStyles.Reservior(1000))

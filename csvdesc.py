@@ -1,12 +1,18 @@
-
 import os
 import sys
 import csv
 import random
+import logging
+import itertools
 import yaml
+from cmdline import CmdLineParser
 from copy import deepcopy
 from decimal import Decimal, InvalidOperation
 from collections import namedtuple, defaultdict
+
+__all__ = ['SamplingStyles',
+           'describe_fileobj',
+           'describe_file']
 
 BOOLEAN_STRINGS = ['yes', 'no', 'true', 'false', 't', 'f', '0', '1', '-1']
 BOOLEAN_VALUES = ['yes', 'no', 'true', 'false', 't', 'f', '0', '1', '-1', 0, 1, -1, True, False]
@@ -109,7 +115,8 @@ class TypeGuesser(object):
 
     def guess(self):
         if self.type_frequencies[bool] == self.observations and len(set(self.value_frequencies.keys()) - set(BOOLEAN_VALUES)) == 0:
-            if len(self.value_frequencies) == 1 and self.value_frequencies.keys[0] in (0, 1):
+            first_value = list(itertools.islice(self.value_frequencies.keys(), 1))[0]
+            if len(self.value_frequencies) == 1 and first_value in ('0', '1'):
                 return self.wrap_guess(int)
             else:
                 return self.wrap_guess(bool)
@@ -155,7 +162,7 @@ def describe_file(path, *args, **kwargs):
     with open(path, 'r') as fil:
         return describe_fileobj(fil, *args, **kwargs)
 
-def main(paths):
+def main(sampling_style, paths):
     (existing_paths, missing_paths) = bifurcate(paths, os.path.exists)
 
     for path in missing_paths:
@@ -163,7 +170,7 @@ def main(paths):
     
     output_struct = []
     for path in existing_paths:
-        guessed_types = describe_file(path)
+        guessed_types = describe_file(path, sampling_style)
         output_struct.append({
             'path': path,
             'types': [
@@ -176,7 +183,28 @@ def main(paths):
     if len(output_struct) > 0:
         yaml.dump(output_struct, stream=sys.stdout)
 
+
+log = logging.getLogger(os.path.basename(__file__)
+                        if __name__ == "__main__"
+                        else __name__)
+
 if __name__ == "__main__":
+    args = CmdLineParser.parse_args()
+    log.setLevel(getattr(logging, args.loglevel.upper()))
+    log.log(log.getEffectiveLevel(),
+            'Logging level: {}', args.loglevel.upper())
+
+    if args.sampling == 'reservoir':
+        sampling_style = SamplingStyles.Reservior(args.samplesize)
+    elif args.sampling == 'firstn':
+        sampling_style = SamplingStyles.FirstN(args.samplesize)
+    elif args.sampling == 'percentage':
+        sampling_style = SamplingStyles.RandomPercentage(float(args.samplesize) / 100)
+    else:
+        sampling_style = SamplingStyles.Population()
+
+    log.critical('Sampling style: %s', str(sampling_style))
+
     if len(sys.argv) > 1:
-        main(sys.argv[1:])
+        main(sampling_style, args.files)
 
