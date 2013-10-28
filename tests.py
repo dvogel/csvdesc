@@ -7,7 +7,8 @@ from decimal import Decimal
 from csvdesc import describe_file, SamplingStyles
 
 def describe_fixture(name, *args, **kwargs):
-    path = os.path.join('fixtures', name)
+    srcdir = os.path.abspath(os.path.dirname(__file__))
+    path = os.path.join(srcdir, 'fixtures', name)
     return describe_file(path, *args, **kwargs)
 
 class TestGuessCorrectness(unittest.TestCase):
