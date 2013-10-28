@@ -62,4 +62,6 @@ class TestSampling(unittest.TestCase):
         guesses = describe_fixture('longfile1.csv', SamplingStyles.Reservior(100))
         self.assertEqual(guesses['field'].observations, 100)
 
+if __name__ == '__main__':
+    unittest.main()
 
