@@ -37,6 +37,7 @@ CmdLineParser.add_argument('--samplesize',
 CmdLineParser.add_argument('--loglevel',
                            action='store',
                            dest='loglevel',
+                           default='warning',
                            choices=('debug', 'info', 'notice', 'warning', 'error', 'critical'))
 
 CmdLineParser.add_argument('files',
