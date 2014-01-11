@@ -194,7 +194,7 @@ if __name__ == "__main__":
     args = CmdLineParser.parse_args()
     log.setLevel(getattr(logging, args.loglevel.upper()))
     log.log(log.getEffectiveLevel(),
-            'Logging level: {}', args.loglevel.upper())
+            'Logging level: %s', args.loglevel.upper())
 
     if args.sampling == 'reservoir':
         sampling_style = SamplingStyles.Reservior(args.samplesize)
